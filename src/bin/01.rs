@@ -62,14 +62,13 @@ pub fn part_two(input: &str) -> Option<u32> {
     let mut r_map = count_similar(&r_list);
 
     Some(l_map.iter().fold(0, |acc, (key, count_left)| -> u32 {
-        let count_right = match r_map.entry(*key){
+        let count_right = match r_map.entry(*key) {
             Entry::Occupied(o) => *o.get(),
             Entry::Vacant(_) => 0,
         };
 
-        acc + key*count_left*count_right
+        acc + key * count_left * count_right
     }))
-
 }
 
 #[cfg(test)]
