@@ -1,5 +1,7 @@
 advent_of_code::solution!(2);
 
+use std::cmp::Ordering;
+
 fn from_str(line: &str) -> Vec<u32> {
     let levels = line.split(" ").collect::<Vec<_>>();
     levels
@@ -12,13 +14,11 @@ fn from_str(line: &str) -> Vec<u32> {
 ///
 /// 1. l and r always increasing or decreasing.
 /// 2. l and r differ by at least one and at most three.
-fn check(l: u32, r: u32, increase: Option<bool>) -> Result<bool, ()> {
-    match (l, r, r.abs_diff(l), increase) {
-        (l, r, d, Some(false)) if l > r && (1..=3).contains(&d) => Ok(false),
-        (l, r, d, Some(true)) if l < r && (1..=3).contains(&d) => Ok(true),
-        (l, r, d, None) if l > r && (1..=3).contains(&d) => Ok(false),
-        (l, r, d, None) if l < r && (1..=3).contains(&d) => Ok(true),
-        _ => Err(())
+fn check(l: u32, r: u32, ord: Ordering) ->bool {
+    match (l, r, r.abs_diff(l), ord) {
+        (l, r, d, Ordering::Greater) if l > r && (1..=3).contains(&d) => true,
+        (l, r, d, Ordering::Less) if l < r && (1..=3).contains(&d) => true,
+        _ => false
     }
 }
 
@@ -26,11 +26,11 @@ fn is_valid_list(binding: &[u32]) -> Result<(), usize> {
     let mut iter = binding.windows(2).enumerate();
 
     // Detect order
-    let mut increase: Option<bool> = None;
+    let ord: Ordering = binding[0].cmp(binding.last().unwrap());
+
     while let Some((idx, [l, r])) = iter.next() {
-        match check(*l, *r, increase) {
-            Ok(v) => increase = Some(v),
-            Err(()) => return Err(idx)
+        if !check(*l, *r, ord) {
+            return Err(idx)
         }
     }
     Ok(())
@@ -40,6 +40,8 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(input.lines().fold(0, |acc, line| {
         // Get u32 list
         let binding = from_str(line);
+
+        if binding[0] == *binding.last().unwrap() {return acc;}
         if is_valid_list(&binding).is_ok() {
             acc + 1
         } else {
@@ -55,6 +57,7 @@ pub fn part_two(input: &str) -> Option<u32> {
     Some(input.lines().fold(0, |acc, line| {
         // Get u32 list
         let binding = from_str(line);
+        if binding[0] == *binding.last().unwrap() {return acc;}
         if let Err(idx) = is_valid_list(&binding) {
             // Recreate list
             let mut binding_idx = binding.clone();
