@@ -14,11 +14,11 @@ fn from_str(line: &str) -> Vec<u32> {
 ///
 /// 1. l and r always increasing or decreasing.
 /// 2. l and r differ by at least one and at most three.
-fn check(l: u32, r: u32, ord: Ordering) ->bool {
+fn check(l: u32, r: u32, ord: Ordering) -> bool {
     match (l, r, r.abs_diff(l), ord) {
         (l, r, d, Ordering::Greater) if l > r && (1..=3).contains(&d) => true,
         (l, r, d, Ordering::Less) if l < r && (1..=3).contains(&d) => true,
-        _ => false
+        _ => false,
     }
 }
 
@@ -30,7 +30,7 @@ fn is_valid_list(binding: &[u32]) -> Result<(), usize> {
 
     while let Some((idx, [l, r])) = iter.next() {
         if !check(*l, *r, ord) {
-            return Err(idx)
+            return Err(idx);
         }
     }
     Ok(())
@@ -41,7 +41,9 @@ pub fn part_one(input: &str) -> Option<u32> {
         // Get u32 list
         let binding = from_str(line);
 
-        if binding[0] == *binding.last().unwrap() {return acc;}
+        if binding[0] == *binding.last().unwrap() {
+            return acc;
+        }
         if is_valid_list(&binding).is_ok() {
             acc + 1
         } else {
@@ -50,14 +52,15 @@ pub fn part_one(input: &str) -> Option<u32> {
     }))
 }
 
-
 //
 // 367, 456, 363. 290 => 318
 pub fn part_two(input: &str) -> Option<u32> {
     Some(input.lines().fold(0, |acc, line| {
         // Get u32 list
         let binding = from_str(line);
-        if binding[0] == *binding.last().unwrap() {return acc;}
+        if binding[0] == *binding.last().unwrap() {
+            return acc;
+        }
         if let Err(idx) = is_valid_list(&binding) {
             // Recreate list
             let mut binding_idx = binding.clone();
@@ -67,11 +70,10 @@ pub fn part_two(input: &str) -> Option<u32> {
             binding_idx_1.remove(idx + 1);
 
             if is_valid_list(&binding_idx).is_ok() || is_valid_list(&binding_idx_1).is_ok() {
-                return acc + 1;
+                acc + 1
             } else {
-                return acc
+                acc
             }
-
         } else {
             acc + 1
         }
