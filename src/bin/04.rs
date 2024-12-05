@@ -79,6 +79,14 @@ impl EflWords {
         let x = x + 3;
         let y = y + 3;
 
+        /*
+         *   -1     0    +1             -1     0    +1             -1     0    +1             -1     0    +1
+         * |  M  |  .  |  M  | -1     |  S  |  .  |  S  | -1     |  M  |  .  |  S  | -1     |  S  |  .  |  M  | -1
+         * |  .  |  A  |  .  |  0  ou |  .  |  A  |  .  |  0  ou |  .  |  A  |  .  |  0  ou |  .  |  A  |  .  |  0
+         * |  S  |  .  |  S  | +1     |  M  |  .  |  M  | +1     |  M  |  .  |  S  | +1     |  S  |  .  |  M  | +1
+         *
+         */
+
         // Reverse
         if  *self.grid.get(x).unwrap().get(y).unwrap() == 'A' &&
         *self.grid.get(x-1).unwrap().get(y-1).unwrap() == 'S' &&
@@ -92,6 +100,20 @@ impl EflWords {
         *self.grid.get(x+1).unwrap().get(y-1).unwrap() == 'M' &&
         *self.grid.get(x-1).unwrap().get(y+1).unwrap() == 'S' &&
         *self.grid.get(x+1).unwrap().get(y+1).unwrap() == 'S' { counter += 1}
+
+        // Reverse
+        if  *self.grid.get(x).unwrap().get(y).unwrap() == 'A' &&
+        *self.grid.get(x-1).unwrap().get(y-1).unwrap() == 'M' &&
+        *self.grid.get(x+1).unwrap().get(y-1).unwrap() == 'S' &&
+        *self.grid.get(x-1).unwrap().get(y+1).unwrap() == 'M' &&
+        *self.grid.get(x+1).unwrap().get(y+1).unwrap() == 'S' { counter += 1}
+
+        // order
+        if  *self.grid.get(x).unwrap().get(y).unwrap() == 'A' &&
+        *self.grid.get(x-1).unwrap().get(y-1).unwrap() == 'S' &&
+        *self.grid.get(x+1).unwrap().get(y-1).unwrap() == 'M' &&
+        *self.grid.get(x-1).unwrap().get(y+1).unwrap() == 'S' &&
+        *self.grid.get(x+1).unwrap().get(y+1).unwrap() == 'M' { counter += 1}
 
 
         counter
