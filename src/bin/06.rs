@@ -44,7 +44,11 @@ impl Guard {
         let new_position = match self.direction {
             Direction::Up => Position {
                 x: self.position.x,
-                y: if self.position.y == 0 {return Err(())} else {self.position.y.checked_sub(1).expect("Y guard too low")},
+                y: if self.position.y == 0 {
+                    return Err(());
+                } else {
+                    self.position.y.checked_sub(1).expect("Y guard too low")
+                },
             },
             Direction::Down => Position {
                 x: self.position.x,
@@ -55,14 +59,18 @@ impl Guard {
                 y: self.position.y,
             },
             Direction::Left => Position {
-                x: if self.position.x == 0 {return Err(())} else {self.position.x.checked_sub(1).expect("X guard too low")},
+                x: if self.position.x == 0 {
+                    return Err(());
+                } else {
+                    self.position.x.checked_sub(1).expect("X guard too low")
+                },
                 y: self.position.y,
             },
         };
 
         Ok(Self {
             direction: self.direction,
-            position: new_position
+            position: new_position,
         })
     }
 
@@ -214,16 +222,24 @@ impl Display for LabMap {
 
 impl LabMap {
     pub fn get_glyph(&self, position: Position) -> Option<Glyph> {
-        if position.x > self.width { return None }
-        if position.y > self.height { return None }
-        self.grid.get(position.y)
-            .and_then(|row| row.get(position.x)).copied()
+        if position.x > self.width {
+            return None;
+        }
+        if position.y > self.height {
+            return None;
+        }
+        self.grid
+            .get(position.y)
+            .and_then(|row| row.get(position.x))
+            .copied()
     }
 
     pub fn next_pos(&self, guard: &Guard) -> Option<Guard> {
         match guard.direction {
             Direction::Up => {
-                if guard.position.y == 0 { return None }
+                if guard.position.y == 0 {
+                    return None;
+                }
                 match self
                     .grid
                     .get(guard.position.y - 1)
@@ -241,7 +257,9 @@ impl LabMap {
             }
 
             Direction::Down => {
-                if guard.position.y  == self.height { return None }
+                if guard.position.y == self.height {
+                    return None;
+                }
                 match self
                     .grid
                     .get(guard.position.y + 1)
@@ -258,7 +276,9 @@ impl LabMap {
                 }
             }
             Direction::Right => {
-                if guard.position.x == self.width { return None }
+                if guard.position.x == self.width {
+                    return None;
+                }
                 match self
                     .grid
                     .get(guard.position.y)
@@ -275,7 +295,9 @@ impl LabMap {
                 }
             }
             Direction::Left => {
-                if guard.position.x == 0 { return None }
+                if guard.position.x == 0 {
+                    return None;
+                }
                 match self
                     .grid
                     .get(guard.position.y)
