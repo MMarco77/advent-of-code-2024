@@ -1,7 +1,9 @@
 advent_of_code::solution!(7);
 
 fn concat_value(higher: &usize, lower: &usize) -> usize {
-    if *higher == 0 { return *lower };
+    if *higher == 0 {
+        return *lower;
+    };
     higher * 10usize.pow(lower.ilog10() + 1) + lower
 }
 
@@ -39,7 +41,8 @@ fn is_calibration_valid2(res: usize, current_value: usize, calibrations: &[usize
         || is_calibration_valid2(
             res,
             concat_value(&current_value, next_value),
-            &next_calibrations)
+            &next_calibrations,
+        )
 }
 
 pub fn part_one(input: &str) -> Option<usize> {
