@@ -50,29 +50,42 @@ impl Point {
             y: left.y + left_2_right_y,
         };
 
-
         let antinode_4 = Point {
             x: right.x - left_2_right_x,
             y: right.y - left_2_right_y,
         };
 
-
-        if antinode_1 != *left && antinode_1 != *right && is_between!(antinode_1.x, 0, max_x_pos as i32) && is_between!(antinode_1.y, 0, max_y_pos as i32) {
+        if antinode_1 != *left
+            && antinode_1 != *right
+            && is_between!(antinode_1.x, 0, max_x_pos as i32)
+            && is_between!(antinode_1.y, 0, max_y_pos as i32)
+        {
             res.push(antinode_1)
         }
 
-        if antinode_2 != *left && antinode_2 != *right && is_between!(antinode_2.x, 0, max_x_pos as i32) && is_between!(antinode_2.y, 0, max_y_pos as i32) {
+        if antinode_2 != *left
+            && antinode_2 != *right
+            && is_between!(antinode_2.x, 0, max_x_pos as i32)
+            && is_between!(antinode_2.y, 0, max_y_pos as i32)
+        {
             res.push(antinode_2)
         }
 
-        if antinode_3 != *left && antinode_3 != *right && is_between!(antinode_3.x, 0, max_x_pos as i32) && is_between!(antinode_3.y, 0, max_y_pos as i32) {
+        if antinode_3 != *left
+            && antinode_3 != *right
+            && is_between!(antinode_3.x, 0, max_x_pos as i32)
+            && is_between!(antinode_3.y, 0, max_y_pos as i32)
+        {
             res.push(antinode_3)
         }
 
-        if antinode_4 != *left && antinode_4 != *right && is_between!(antinode_4.x, 0, max_x_pos as i32) && is_between!(antinode_4.y, 0, max_y_pos as i32) {
+        if antinode_4 != *left
+            && antinode_4 != *right
+            && is_between!(antinode_4.x, 0, max_x_pos as i32)
+            && is_between!(antinode_4.y, 0, max_y_pos as i32)
+        {
             res.push(antinode_4)
         }
-
 
         res
     }
@@ -101,22 +114,33 @@ impl Point {
                     let dy = p2.y - p1.y;
 
                     for k in 1.. {
-                        let antinode_1 = Point { x: p1.x + k * dx, y: p1.y + k * dy };
-                        let antinode_2 = Point { x: p2.x - k * dx, y: p2.y - k * dy };
+                        let antinode_1 = Point {
+                            x: p1.x + k * dx,
+                            y: p1.y + k * dy,
+                        };
+                        let antinode_2 = Point {
+                            x: p2.x - k * dx,
+                            y: p2.y - k * dy,
+                        };
 
                         let mut have_break = true;
-                        if is_between!(antinode_1.x, 0, max_x_pos as i32) && is_between!(antinode_1.y, 0, max_y_pos as i32) {
+                        if is_between!(antinode_1.x, 0, max_x_pos as i32)
+                            && is_between!(antinode_1.y, 0, max_y_pos as i32)
+                        {
                             antinodes.insert(antinode_1);
                             have_break = false;
                         }
 
-                        if is_between!(antinode_2.x, 0, max_x_pos as i32) && is_between!(antinode_2.y, 0, max_y_pos as i32) {
+                        if is_between!(antinode_2.x, 0, max_x_pos as i32)
+                            && is_between!(antinode_2.y, 0, max_y_pos as i32)
+                        {
                             antinodes.insert(antinode_2);
                             have_break = false;
                         }
 
-                        if have_break {break}
-
+                        if have_break {
+                            break;
+                        }
                     }
                 }
             }
@@ -180,28 +204,28 @@ impl FromStr for Map {
 
         // Parse
         let grid: Vec<Vec<_>> = s
-        .lines()
-        .enumerate()
-        .map(|(y, line)| {
-            line.chars()
-                .enumerate()
-                .map( |(x, c)|  match Glyph::from_str(&c.to_string()) {
+            .lines()
+            .enumerate()
+            .map(|(y, line)| {
+                line.chars()
+                    .enumerate()
+                    .map(|(x, c)| match Glyph::from_str(&c.to_string()) {
                         Ok(Glyph::Antenna(label)) => {
-
                             let values = match antenna_list.entry(label) {
                                 Entry::Occupied(o) => o.into_mut(),
                                 Entry::Vacant(v) => v.insert(vec![]),
                             };
-                            values.push(Point { x: x.try_into().unwrap() , y: y.try_into().unwrap() });
+                            values.push(Point {
+                                x: x.try_into().unwrap(),
+                                y: y.try_into().unwrap(),
+                            });
                             Glyph::Antenna(c.to_string())
-                        },
+                        }
                         _ => Glyph::Empty,
-
-                    }
-                )
-                .collect()
-        })
-        .collect();
+                    })
+                    .collect()
+            })
+            .collect();
 
         // Compute grid dimension
         let width = s.lines().last().unwrap().chars().count();
@@ -251,8 +275,10 @@ pub fn part_one(input: &str) -> Option<usize> {
     // }
 
     for pt in antinode_list.clone() {
-        map.grid.get_mut(pt.y as usize).and_then(|row| Some(row[pt.x as usize]  = Glyph::AntiNode));
-    //
+        map.grid
+            .get_mut(pt.y as usize)
+            .and_then(|row| Some(row[pt.x as usize] = Glyph::AntiNode));
+        //
     }
 
     Some(antinode_list.len())
@@ -280,4 +306,3 @@ mod tests {
         assert_eq!(result, Some(34));
     }
 }
-
