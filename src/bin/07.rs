@@ -55,7 +55,7 @@ pub fn part_one(input: &str) -> Option<usize> {
             .collect::<Vec<_>>();
         let res = res
             .parse::<usize>()
-            .expect(&format!("Invalid result for '{res}'"));
+            .unwrap_or_else(|_| panic!("Invalid result for '{res}'"));
         if is_calibration_valid(res, 0, &nbr_list) {
             acc + res
         } else {
@@ -74,7 +74,7 @@ pub fn part_two(input: &str) -> Option<usize> {
             .collect::<Vec<_>>();
         let res = res
             .parse::<usize>()
-            .expect(&format!("Invalid result for '{res}'"));
+            .unwrap_or_else(|_| panic!("Invalid result for '{res}'"));
         if is_calibration_valid2(res, 0, &nbr_list) {
             acc + res
         } else {

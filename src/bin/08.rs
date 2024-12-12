@@ -275,10 +275,9 @@ pub fn part_one(input: &str) -> Option<usize> {
     // }
 
     for pt in antinode_list.clone() {
-        map.grid
-            .get_mut(pt.y as usize)
-            .and_then(|row| Some(row[pt.x as usize] = Glyph::AntiNode));
-        //
+        if let Some(row) = map.grid.get_mut(pt.y as usize)
+        {
+            row[pt.x as usize] = Glyph::AntiNode        }
     }
 
     Some(antinode_list.len())
