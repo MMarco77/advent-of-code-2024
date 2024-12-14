@@ -3,22 +3,25 @@ use ibig::{ubig, UBig};
 advent_of_code::solution!(11);
 
 fn blink(stones: &[UBig]) -> Vec<UBig> {
-    stones.iter().flat_map(|stone| {
-        if *stone == ubig!(0) {
-            vec![ubig!(1)]
-        } else {
-            let str_stone = stone.to_string();
-            if (str_stone.len() % 2) == 0 {
-                let (left, right) = str_stone.split_at(str_stone.len()/2);
-                vec![
-                    left.parse::<UBig>().expect("Invalid left"),
-                    right.parse::<UBig>().expect("Invalid left")
-                ]
+    stones
+        .iter()
+        .flat_map(|stone| {
+            if *stone == ubig!(0) {
+                vec![ubig!(1)]
             } else {
-                vec![stone*ubig!(2024)]
+                let str_stone = stone.to_string();
+                if (str_stone.len() % 2) == 0 {
+                    let (left, right) = str_stone.split_at(str_stone.len() / 2);
+                    vec![
+                        left.parse::<UBig>().expect("Invalid left"),
+                        right.parse::<UBig>().expect("Invalid left"),
+                    ]
+                } else {
+                    vec![stone * ubig!(2024)]
+                }
             }
-        }
-    }).collect()
+        })
+        .collect()
 }
 
 pub fn part_one(input: &str) -> Option<usize> {
@@ -40,7 +43,7 @@ pub fn part_two(input: &str) -> Option<usize> {
         .map(|c| c.parse().expect("Invalid Big Int"))
         .collect::<Vec<_>>();
 
-    for step in 0..75 {
+    for _step in 0..75 {
         stones = blink(&stones);
         // println!("Step {} [{}]", step, stones.len());
     }
