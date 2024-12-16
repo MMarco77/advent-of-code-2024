@@ -1,5 +1,6 @@
 use regex::Regex;
 use std::str::FromStr;
+use fraction::GenericFraction;
 
 advent_of_code::solution!(13);
 
@@ -10,8 +11,8 @@ struct ErrorParsing;
 
 #[derive(Debug, Clone, Copy)]
 struct Button {
-    x: u32,
-    y: u32,
+    x: usize,
+    y: usize,
 }
 
 impl FromStr for Button {
@@ -26,13 +27,13 @@ impl FromStr for Button {
                 .get(1)
                 .unwrap()
                 .as_str()
-                .parse::<u32>()
+                .parse::<usize>()
                 .expect("Invalid X"),
             y: caps
                 .get(2)
                 .unwrap()
                 .as_str()
-                .parse::<u32>()
+                .parse::<usize>()
                 .expect("Invalid Y"),
         })
     }
@@ -40,10 +41,10 @@ impl FromStr for Button {
 
 /* ========================================================================= */
 
-#[derive(Debug, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone)]
 struct Prize {
-    prize_x: u32,
-    prize_y: u32,
+    prize_x: usize,
+    prize_y: usize,
 }
 
 impl FromStr for Prize {
@@ -57,85 +58,21 @@ impl FromStr for Prize {
                 .get(1)
                 .unwrap()
                 .as_str()
-                .parse::<u32>()
+                .parse::<usize>()
                 .expect("Invalid Prize X"),
             prize_y: caps
                 .get(2)
                 .unwrap()
                 .as_str()
-                .parse::<u32>()
+                .parse::<usize>()
                 .expect("Invalid Prize Y"),
         })
     }
 }
 
-impl Prize {
-    pub fn is_over(&self, prize: Prize) -> bool {
-
-    impl Ord for Prize {
-        fn cmp(&self, other: &Self) -> Ordering {
-            if self.prize_x == other.prize_x && self.prize_y == other.prize_y {
-                return Ordering::Equal;
-            } else if self.prize_x > other.prize_x || self.prize_y > other.prize_y {
-                return Ordering::Greater;
-            } else {
-                return Ordering::Greater;
-            }
-        }
-    }
-}
-
 /* ========================================================================= */
 
 #[derive(Debug)]
-enum ButtonToClick {
-    BtnA(Button),
-    BtnB(Button)
-}
-
-#[derive(Debug)]
-struct Claw {
-    btn_a_count: u32,
-    btn_b_count: u32,
-    prize: Prize,
-}
-
-impl Claw {
-    pub fn new() -> Self {
-        Self {
-            btn_a_count: 0,
-            btn_b_count: 0,
-            prize: Prize {
-                prize_x: 0,
-                prize_y: 0,
-            },
-        }
-    }
-
-    pub fn add(&self, btn: ButtonToClick) -> Self {
-        match btn {
-            ButtonToClick::BtnA(button) => Self {
-                btn_a_count: self.btn_a_count + 1,
-                btn_b_count: self.btn_a_count,
-                prize: Prize {
-                    prize_x: self.prize.prize_x + button.x,
-                    prize_y: self.prize.prize_y + button.y,
-                },
-            },
-            ButtonToClick::BtnB(button) => Self {
-                btn_a_count: self.btn_a_count,
-                btn_b_count: self.btn_a_count + 1,
-                prize: Prize {
-                    prize_x: self.prize.prize_x + button.x,
-                    prize_y: self.prize.prize_y + button.y,
-                },
-            },
-        }
-    }
-}
-
-/* ========================================================================= */
-
 struct Machine {
     button_a: Button,
     button_b: Button,
@@ -157,27 +94,97 @@ impl FromStr for Machine {
     }
 }
 
-impl Machine {
-    fn play(&self, current_claw: &Claw, btn_2_click: ButtonToClick) -> Option<Claw> {
-        // eprintln!("current_claw {:#?} | btn_2_click {:#?}", current_claw.prize, btn_2_click);
-        // eprintln!("current_claw {:#?}", current_claw.prize);
-        let next_claw = current_claw.add(btn_2_click);
-        if current_claw.prize == next_claw.prize { return Some(next_claw) }
-        eprintln!("{:#?} > {:#?} => ", current_claw.prize, next_claw.prize, );
-        if current_claw.prize > next_claw.prize { return None }
-        if current_claw.btn_a_count >= 100 || current_claw.btn_b_count >= 100 { return None }
+fn echelon(matrix: &mut [Vec<f32>], i: usize, j: usize) {
+    let size = matrix.len();
+    if matrix[i][i] == 0f32 {
+    } else {
+        let factor = matrix[j + 1][i] / matrix[i][i];
+        (i..size + 1).for_each(|k| {
+            matrix[j + 1][k] -= factor * matrix[i][k];
+        });
+    }
+}
 
-        if let Some(winner) = self.play(&next_claw, ButtonToClick::BtnA(self.button_a)) {
-            Some(winner)
-        } else {
-            self.play(&next_claw, ButtonToClick::BtnB(self.button_b))
+fn eliminate(matrix: &mut [Vec<f32>], i: usize) {
+    let size = matrix.len();
+    if matrix[i][i] == 0f32 {
+    } else {
+        for j in (1..i + 1).rev() {
+            let factor = matrix[j - 1][i] / matrix[i][i];
+            for k in (0..size + 1).rev() {
+                matrix[j - 1][k] -= factor * matrix[i][k];
+            }
         }
+    }
+}
+
+pub fn gaussian_elimination(matrix: &mut [Vec<f32>]) -> Vec<f32> {
+    let size = matrix.len();
+    assert_eq!(size, matrix[0].len() - 1);
+
+    for i in 0..size - 1 {
+        for j in i..size - 1 {
+            echelon(matrix, i, j);
+        }
+    }
+
+    for i in (1..size).rev() {
+        eliminate(matrix, i);
+    }
+
+    // Disable cargo clippy warnings about needless range loops.
+    // Checking the diagonal like this is simpler than any alternative.
+    #[allow(clippy::needless_range_loop)]
+    for i in 0..size {
+        if matrix[i][i] == 0f32 {
+            println!("Infinitely many solutions");
+        }
+    }
+
+    let mut result: Vec<f32> = vec![0f32; size];
+    for i in 0..size {
+        result[i] = matrix[i][size] / matrix[i][i];
+    }
+    result
+}
+
+impl Machine {
+    fn solve(&self) -> Option<(usize, usize)> {
+        // let mut matrix =  vec![
+        //     vec![self.button_a.x as f32, self.self.button_b.x as f32, self.prize.prize_x as f32],
+        //     vec![self.button_a.y as f32, self.self.button_b.y as f32, self.prize.prize_y as f32],
+        // ];
+        // let result = gaussian_elimination(&mut matrix);
+        // if result.len() != 2 {
+        //     None
+        // } else {
+        //     let mut iter = result.iter();
+        //     let pos_x = iter.next().expect("Invalid x");
+        //     let pos_y = iter.next().expect("Invalid y");
+        //     if *pos_x < 0.0 || *pos_x >= 100.0 || *pos_y >= 100.0 || *pos_y < 0.0 {
+        //         None
+        //     } else {
+        //         eprintln!("result ({pos_x},{pos_y})");
+        //         Some((pos_x.round() as usize,pos_y.round() as usize))
+        //     }
+        // }
+
+        let dy1_dx1:GenericFraction<usize>  = GenericFraction::new(self.button_a.y, self.button_a.x);
+        let f2 = (GenericFraction::from(self.prize.prize_y) - GenericFraction::from(self.prize.prize_x) * dy1_dx1)
+            / (GenericFraction::from(self.button_b.y) - GenericFraction::from(self.button_b.x) * dy1_dx1);
+        let f1 = (GenericFraction::from(self.prize.prize_x) - f2 * self.button_b.x) / GenericFraction::from(self.button_a.x);
+        let f2: usize = f2.try_into().ok()?;
+        let f1: usize = f1.try_into().ok()?;
+
+        Some((f1, f2))
+
     }
 }
 
 /* ========================================================================= */
 
-pub fn part_one(input: &str) -> Option<u32> {
+// 28138
+pub fn part_one(input: &str) -> Option<usize> {
     let casino: Vec<String> = input
         .split("\n\n")
         .map(|c| c.to_string())
@@ -187,29 +194,44 @@ pub fn part_one(input: &str) -> Option<u32> {
         .map(|m| Machine::from_str(m).expect("Invalid machine"))
         .collect::<Vec<_>>();
 
-    eprintln!("Found {} machines", machines.len());
-
-    let winners: Vec<Claw> = machines.iter().filter_map(|m| {
-        eprintln!("Process machine");
-        let claw = Claw::new();
-        if let Some(winner) = m.play(&claw, ButtonToClick::BtnA(m.button_a)) {
-            Some(winner)
-        } else {
-            // Restart with new claw
-            m.play(&claw, ButtonToClick::BtnB(m.button_b))
-        }
-    }).collect();
-    eprintln!("Found {} winners", winners.len());
-
-    Some (
-        winners.iter().fold(0, |acc, win| {
-            acc + win.btn_a_count*3 + win.btn_b_count
+    let winners: Vec<(usize, usize)> = machines
+        .iter()
+        .filter_map(|m| {
+            m.solve()
         })
-    )
+        .collect();
+
+    Some(winners.iter().fold(0, |acc, win| {
+        acc + win.0 * 3 + win.1
+    }))
 }
 
-pub fn part_two(_input: &str) -> Option<u32> {
-    None
+// 108394825772874
+pub fn part_two(input: &str) -> Option<usize> {
+    let casino: Vec<String> = input
+        .split("\n\n")
+        .map(|c| c.to_string())
+        .collect::<Vec<_>>();
+    let machines = casino
+        .iter()
+        .map(|m| {
+            let mut m = Machine::from_str(m).expect("Invalid machine");
+            m.prize.prize_x += 10_000_000_000_000;
+            m.prize.prize_y += 10_000_000_000_000;
+            m
+        })
+        .collect::<Vec<_>>();
+
+    let winners: Vec<(usize, usize)> = machines
+        .iter()
+        .filter_map(|m| {
+            m.solve()
+        })
+        .collect();
+
+    Some(winners.iter().fold(0, |acc, win| {
+        acc + win.0 * 3 + win.1
+    }))
 }
 
 #[cfg(test)]
